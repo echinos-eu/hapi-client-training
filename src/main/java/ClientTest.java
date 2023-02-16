@@ -1,6 +1,7 @@
 
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import org.hl7.fhir.r4.model.Bundle;
@@ -26,6 +27,7 @@ public class ClientTest {
         .forResource(Patient.class)
         .where(Patient.NAME.matches().value("Smith"))
         .returnBundle(Bundle.class)
+        .totalMode(SearchTotalModeEnum.ACCURATE)
         .execute();
 
     returnBundle.getEntry().stream().map(e -> e.getResource())
