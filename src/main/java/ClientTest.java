@@ -1,6 +1,7 @@
 
 
 import ca.uhn.fhir.context.FhirContext;
+import ca.uhn.fhir.parser.IParser;
 import ca.uhn.fhir.rest.api.SearchTotalModeEnum;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
@@ -23,15 +24,26 @@ public class ClientTest {
     client.registerInterceptor(new LoggingInterceptor());
 
     // search for Patient "Smith"
-    Bundle returnBundle = client.search()
-        .forResource(Patient.class)
-        .where(Patient.NAME.matches().value("Smith"))
-        .returnBundle(Bundle.class)
-        .totalMode(SearchTotalModeEnum.ACCURATE)
-        .execute();
+//    Bundle returnBundle = client.search()
+//        .forResource(Patient.class)
+//        .where(Patient.NAME.matches().value("Smith"))
+//        .returnBundle(Bundle.class)
+//        .totalMode(SearchTotalModeEnum.ACCURATE)
+//        .execute();
+//
+//    returnBundle.getEntry().stream().map(e -> e.getResource())
+//        .forEach(r -> System.out.println("ResourceId: " + r.getId()));
+//    System.out.println("Found a total of: " + returnBundle.getTotal());
 
-    returnBundle.getEntry().stream().map(e -> e.getResource())
-        .forEach(r -> System.out.println("ResourceId: " + r.getId()));
-    System.out.println("Found a total of: " + returnBundle.getTotal());
+    Patient patient = new Patient();
+    patient.addName().addGiven("Patrick").addGiven("Fritz")
+        .setFamily("Nobre Gomes Areal Werner");
+    patient.setActive(true);
+    patient.addIdentifier().setSystem("http://testHospital.org/sid/patientNumbers")
+        .setValue("0148946344648984");
+
+    IParser jsonParser = ctx.newJsonParser().setPrettyPrint(true);
+    System.out.println(jsonParser.encodeResourceToString(patient));
+
   }
 }
