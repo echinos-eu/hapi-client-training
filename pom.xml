@@ -9,7 +9,7 @@
   <name>HAPI FHIR Skeleton Project (Client)</name>
 
   <properties>
-    <hapifhir_version>6.2.2</hapifhir_version>
+    <hapifhir_version>6.2.5</hapifhir_version>
   </properties>
 
   <repositories>
