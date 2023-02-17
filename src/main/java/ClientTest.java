@@ -8,8 +8,10 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
+import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
+import org.hl7.fhir.r4.model.DocumentReference;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Reference;
 
@@ -110,5 +112,13 @@ public class ClientTest {
         .returnBundle(Bundle.class)
         .execute();
     System.out.println(conditionBundle.getTotal());
+
+    DocumentReference docRef = new DocumentReference();
+    docRef.setSubject(new Reference(id));
+    Attachment attachment = docRef.addContent().getAttachment();
+    attachment
+        .setData(FileReader.getFile("files/Happy-patrick-star.jpg"));
+    attachment.setUrl("files/Happy-patrick-star.jpg");
+    System.out.println(jsonParser.encodeResourceToString(docRef));
   }
 }
