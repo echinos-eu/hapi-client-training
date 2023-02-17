@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+
+  fhir-server:
+    image: hapiproject/hapi:latest
+    restart: always
+    networks:
+      - hapi-network
+    ports:
+      - 8080:8080
+    volumes:
+      - ./fhir-application.yaml:/data/hapi/application.yaml
+      - ./luceneIndex:/opt/lucenefiles
+    environment:
+      SPRING_CONFIG_LOCATION: 'file:///data/hapi/application.yaml'
+      JAVA_OPTS: -Xms512m -Xmx4g
+
+  fhir-postgres-db:
+    image: postgres:14
+    networks:
+      - hapi-network
+    volumes:
+      - fhir_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: hapi
+      POSTGRES_USER: hapi
+      POSTGRES_PASSWORD: hapi
+
+networks:
+  hapi-network:
+    name: hapi-network
+
+volumes:
+  fhir_postgres_data:
+    driver: local
