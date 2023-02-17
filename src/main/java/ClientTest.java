@@ -8,7 +8,6 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
-import org.hl7.fhir.instance.model.api.IIdType;
 import org.hl7.fhir.r4.model.Bundle;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.Patient;
@@ -27,8 +26,9 @@ public class ClientTest {
     // increase socketTimeout
     ctx.getRestfulClientFactory().setSocketTimeout(20 * 1000);
 
-    // Create a client
-    IGenericClient client = ctx.newRestfulGenericClient("https://hapi.fhir.org/baseR4");
+    // Create a clien
+//    IGenericClient client = ctx.newRestfulGenericClient("https://hapi.fhir.org/baseR4");
+    IGenericClient client = ctx.newRestfulGenericClient("http://localhost:8080/fhir");
     //add logging interceptor
     client.registerInterceptor(new LoggingInterceptor());
 
@@ -57,14 +57,14 @@ public class ClientTest {
     System.out.println(jsonParser.encodeResourceToString(patient));
 
     //send the patient to the FHIR Server/Endpoint
-    IIdType id = null;
+    String id = null;
     try {
       MethodOutcome methodOutcome = client.create()
           .resource(patient)
           .conditional()
           .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(identSystem, identValue))
           .execute();
-      id = methodOutcome.getId();
+      id = methodOutcome.getId().getResourceType() + "/" + methodOutcome.getId().getIdPart();
       System.out.println("The Patient ID: " + id);
     } catch (Exception e) {
       System.out.println("Patient already on Server: " + e.getMessage());
@@ -74,7 +74,9 @@ public class ClientTest {
           .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(identSystem, identValue))
           .returnBundle(Bundle.class)
           .execute();
-      id = returnBundleInCatch.getEntryFirstRep().getResource().getIdElement();
+      id = returnBundleInCatch.getEntryFirstRep().getResource().getIdElement().getResourceType()
+          + "/" +
+          returnBundleInCatch.getEntryFirstRep().getResource().getIdElement().getIdPart();
     }
 
     Condition condition = new Condition();
