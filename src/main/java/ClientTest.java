@@ -22,38 +22,51 @@ public class ClientTest {
     // Create a context
     FhirContext ctx = FhirContext.forR4();
 
+    // increase socketTimeout
+    ctx.getRestfulClientFactory().setSocketTimeout(20 * 1000);
+
     // Create a client
     IGenericClient client = ctx.newRestfulGenericClient("https://hapi.fhir.org/baseR4");
     //add logging interceptor
     client.registerInterceptor(new LoggingInterceptor());
 
     // search for Patient "Smith"
-//    Bundle returnBundle = client.search()
-//        .forResource(Patient.class)
-//        .where(Patient.NAME.matches().value("Smith"))
-//        .returnBundle(Bundle.class)
-//        .totalMode(SearchTotalModeEnum.ACCURATE)
-//        .execute();
-//
-//    returnBundle.getEntry().stream().map(e -> e.getResource())
-//        .forEach(r -> System.out.println("ResourceId: " + r.getId()));
-//    System.out.println("Found a total of: " + returnBundle.getTotal());
+    Bundle returnBundle = client.search()
+        .forResource(Patient.class)
+        .where(Patient.NAME.matches().value("Smith"))
+        .returnBundle(Bundle.class)
+        .totalMode(SearchTotalModeEnum.ACCURATE)
+        .execute();
+
+    returnBundle.getEntry().stream().map(e -> e.getResource())
+        .forEach(r -> System.out.println("ResourceId: " + r.getId()));
+    System.out.println("Found a total of: " + returnBundle.getTotal());
 
     Patient patient = new Patient();
     patient.addName().addGiven("Patrick").addGiven("Fritz")
         .setFamily("Nobre Gomes Areal Werner");
     patient.setActive(true);
-    patient.addIdentifier().setSystem("http://testHospital.org/sid/patientNumbers")
-        .setValue("0148946344648984");
+    String identSystem = "http://testHospital.org/sid/patientNumbers";
+    String identValue = "0148946344648984";
+    patient.addIdentifier().setSystem(identSystem)
+        .setValue(identValue);
 
     IParser jsonParser = ctx.newJsonParser().setPrettyPrint(true);
     System.out.println(jsonParser.encodeResourceToString(patient));
 
     //send the patient to the FHIR Server/Endpoint
-    MethodOutcome methodOutcome = client.create()
-        .resource(patient).execute();
-    IIdType id = methodOutcome.getId();
-    System.out.println("The Patient ID: " + id);
+    IIdType id = null;
+    try {
+      MethodOutcome methodOutcome = client.create()
+          .resource(patient)
+          .conditional()
+          .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(identSystem, identValue))
+          .execute();
+      id = methodOutcome.getId();
+      System.out.println("The Patient ID: " + id);
+    } catch (Exception e) {
+      System.out.println("Patient already on Server: " + e.getMessage());
+    }
 
     Condition condition = new Condition();
     // add ICD-10-GM Coding
