@@ -11,8 +11,11 @@ import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
+import org.hl7.fhir.r4.model.Bundle.BundleLinkComponent;
 import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.DocumentReference;
+import org.hl7.fhir.r4.model.Enumerations.AdministrativeGender;
+import org.hl7.fhir.r4.model.HumanName.NameUse;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Reference;
 
@@ -38,15 +41,36 @@ public class ClientTest {
     client.registerInterceptor(new LoggingInterceptor());
 
     // search for Patient "Smith"
-    Bundle bundle = client.search()
-        .forResource(Patient.class)
-        .where(Patient.NAME.matches().value("Smith"))
-        .returnBundle(Bundle.class)
-        .execute();
+//    Bundle bundle = client.search()
+//        .forResource(Patient.class)
+//        .where(Patient.NAME.matches().value("Smith"))
+//        .returnBundle(Bundle.class)
+//        .totalMode(SearchTotalModeEnum.ACCURATE)
+//        .execute();
+//
+//    String s = jsonParser.encodeResourceToString(bundle);
+//    System.out.println(s);
+//
+//    bundle.getEntry().stream().map(e -> e.getResource())
+//        .forEach(r -> System.out.println("ResourceId: " + r.getId()));
+//    System.out.println("Total Entries: " + bundle.getTotal());
+//
+//    // getNextPage
+//    if (bundle.getLink(Bundle.LINK_NEXT) != null) {
+//      Bundle bundle2 = client.loadPage().next(bundle).execute();
+//      System.out.println(jsonParser.encodeResourceToString(bundle2));
+//    }
 
-    String s = jsonParser.encodeResourceToString(bundle);
-    System.out.println(s);
+    // add new Patient
+    Patient pat = new Patient();
+    pat.addName().setFamily("Werner").addGiven("Vorname").addGiven("Fritz")
+        .setUse(NameUse.OFFICIAL);
+    pat.setGender(AdministrativeGender.MALE);
+    pat.setActive(true);
+    String identifierSystem = "http://echinos.eu/fhir/sid/patientNumber";
+    String identifierValue = "946098979840294";
+    pat.addIdentifier().setSystem(identifierSystem).setValue(identifierValue);
 
-
+    System.out.println(jsonParser.encodeResourceToString(pat));
   }
 }
