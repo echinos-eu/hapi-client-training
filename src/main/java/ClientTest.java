@@ -22,6 +22,9 @@ import org.hl7.fhir.r4.model.Reference;
 
 public class ClientTest {
 
+  private static IGenericClient client;
+  private static IParser iParser;
+
   /**
    * This is the Java main method, which gets executed
    */
@@ -29,6 +32,27 @@ public class ClientTest {
 
     // Create a context
     FhirContext ctx = FhirContext.forCached(FhirVersionEnum.R4);
+    String serverBase = "http://hapi.fhir.org/baseR4";
+    client = ctx.newRestfulGenericClient(serverBase);
+    client.registerInterceptor(new LoggingInterceptor());
+    iParser = ctx.newJsonParser().setPrettyPrint(true);
 
+    //searchPatientSmith();
+
+  }
+
+  private static void searchPatientSmith() {
+    Bundle bundle = client.search()
+        .forResource(Patient.class)
+        .where(Patient.NAME.matches().value("Smith"))
+        .returnBundle(Bundle.class)
+        .totalMode(SearchTotalModeEnum.ACCURATE)
+        .count(2)
+        .execute();
+
+    bundle.getEntry().stream().map(e -> e.getResource())
+        .forEach(r -> System.out.println("ResourceID: " + r.getId()));
+
+    System.out.println(bundle.getTotal());
   }
 }
