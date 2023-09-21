@@ -38,9 +38,8 @@ public class ClientTest {
     iParser = ctx.newJsonParser().setPrettyPrint(true);
 
     //searchPatientSmith();
-
+    createPatient();
   }
-
   private static void searchPatientSmith() {
     Bundle bundle = client.search()
         .forResource(Patient.class)
@@ -55,4 +54,29 @@ public class ClientTest {
 
     System.out.println(bundle.getTotal());
   }
+
+  private static void createPatient() {
+    Patient patient = new Patient();
+    patient.addName().addGiven("Patrick").addGiven("Fritz").setFamily("Werner");
+    String identSystem = "http://echinos.eu/fhir/sid/PatientIdentifier";
+    String identValue = "012598419642sfdf34";
+    patient.addIdentifier().setSystem(identSystem).setValue(identValue);
+    patient.setGender(AdministrativeGender.MALE);
+    patient.setActive(true);
+
+    String patString = iParser.encodeResourceToString(patient);
+    System.out.println(patString);
+
+    MethodOutcome outcome = client.create()
+        .resource(patient)
+        .conditional()
+        .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(identSystem, identValue))
+        .execute();
+    String patId = outcome.getId().getValueAsString();
+    System.out.println(patId);
+
+    System.out.println(outcome.getResponseStatusCode());
+    System.out.println("Resource created?: " + outcome.getCreated());
+  }
 }
+
