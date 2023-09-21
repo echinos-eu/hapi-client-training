@@ -21,14 +21,18 @@ Here are some things to try:
 
 * [ ] Use a FHIR **Create** operation to create a new Patient resource on the server. Give it your name, or a fictional name you make up.
 
-    * [ ] Log the ID that the server assigned to this resource
+  * [ ] Log the ID that the server assigned to this resource
 
-    * [ ] Use a FHIR **Read** to read it back
+  * [ ] Modify the resource create to a conditional create
 
-    * [ ] Use a FHIR **Update** to update it
+  * [ ] Use a FHIR **Read** to read it back
 
-    * [ ] Use a FHIR **Delete** to delete it
+  * [ ] Use a FHIR **Update** to update it
 
-    * [ ] Try modifying your *Read* code so that it displays a useful error if the resource has been deleted
+  * [ ] Use a FHIR **Delete** to delete it
 
-Note that you you can find a few hints and examples in `TestApplicationHints.java`
+  * [ ] Try modifying your *Read* code so that it displays a useful error if the resource has been deleted
+
+  * [ ] Add 2 Conditions to the patient resource
+
+* [ ] Create a transaction bundle containing all previous resources and interactions
