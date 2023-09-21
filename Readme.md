@@ -33,6 +33,6 @@ Here are some things to try:
 
   * [ ] Try modifying your *Read* code so that it displays a useful error if the resource has been deleted
 
-  * [ ] Add 2 Conditions to the patient resource
+  * [ ] Add 2 Conditions to the patient resource: 'Adipositas durch übermäßige Kalorienzufuhr' & 'Essentielle Hypertonie, nicht näher bezeichnet' 
 
 * [ ] Create a transaction bundle containing all previous resources and interactions
