@@ -9,6 +9,9 @@ import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.gclient.ReferenceClientParam;
 import ca.uhn.fhir.rest.gclient.TokenClientParam;
+import ca.uhn.fhir.rest.server.exceptions.ResourceGoneException;
+import java.util.Date;
+import org.checkerframework.checker.units.qual.K;
 import org.hl7.fhir.instance.model.api.IBaseResource;
 import org.hl7.fhir.r4.model.Attachment;
 import org.hl7.fhir.r4.model.Bundle;
@@ -17,6 +20,7 @@ import org.hl7.fhir.r4.model.Condition;
 import org.hl7.fhir.r4.model.DocumentReference;
 import org.hl7.fhir.r4.model.Enumerations.AdministrativeGender;
 import org.hl7.fhir.r4.model.HumanName.NameUse;
+import org.hl7.fhir.r4.model.IdType;
 import org.hl7.fhir.r4.model.Patient;
 import org.hl7.fhir.r4.model.Reference;
 
@@ -38,7 +42,7 @@ public class ClientTest {
     iParser = ctx.newJsonParser().setPrettyPrint(true);
 
     //searchPatientSmith();
-    createPatient();
+    createReadUpdateDeletePatient();
   }
   private static void searchPatientSmith() {
     Bundle bundle = client.search()
@@ -55,7 +59,7 @@ public class ClientTest {
     System.out.println(bundle.getTotal());
   }
 
-  private static void createPatient() {
+  private static void createReadUpdateDeletePatient() {
     Patient patient = new Patient();
     patient.addName().addGiven("Patrick").addGiven("Fritz").setFamily("Werner");
     String identSystem = "http://echinos.eu/fhir/sid/PatientIdentifier";
@@ -67,16 +71,43 @@ public class ClientTest {
     String patString = iParser.encodeResourceToString(patient);
     System.out.println(patString);
 
-    MethodOutcome outcome = client.create()
-        .resource(patient)
-        .conditional()
-        .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(identSystem, identValue))
-        .execute();
-    String patId = outcome.getId().getValueAsString();
-    System.out.println(patId);
+//    MethodOutcome outcome = client.create()
+//        .resource(patient)
+//        .conditional()
+//        .where(Patient.IDENTIFIER.exactly().systemAndIdentifier(identSystem, identValue))
+//        .execute();
+//    String patId = outcome.getId().getValueAsString();
+//    System.out.println(patId);
+//
+//    System.out.println(outcome.getResponseStatusCode());
+//    System.out.println("Resource created?: " + outcome.getCreated());
 
-    System.out.println(outcome.getResponseStatusCode());
-    System.out.println("Resource created?: " + outcome.getCreated());
+    // read created resource back
+
+    Patient readPatient = null;
+    try {
+      readPatient = client.read()
+          .resource(Patient.class)
+          .withId(new IdType("Patient/14994670"))
+          .execute();
+    } catch (ResourceGoneException e) {
+      System.out.println("Resource was deleted: " + e.getMessage());;
+    }
+
+    //System.out.println(iParser.encodeResourceToString(readPatient));
+
+    patient.setBirthDate(new Date());
+    patient.addAddress().addLine(IdType.newRandomUuid().getValue());
+
+    MethodOutcome updateOutcome = client.update()
+        .resource(patient)
+        .withId("Patient/14994670")
+        .execute();
+    System.out.println(updateOutcome.getId().getValueAsString());
+
+    client.delete()
+        .resourceById(new IdType("Patient/14994670"))
+        .execute();
   }
 }
 
